@@ -74,5 +74,3 @@ SELECT * FROM DEPT;
 ```sql
 SET SQL_SAFE_UPDATES = 0;
 ```
-
-These commands can be run separately in their respective shells. Let me know if you need any further modifications!
