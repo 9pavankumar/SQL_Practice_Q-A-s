@@ -275,30 +275,25 @@ AND e.EMPNO IN (SELECT EMPNO FROM EMPY WHERE JOB IN ('MANAGER','SALESMAN') AND M
 
 ```sql
 -- Method 1: Using a Subquery
-SELECT *
-FROM EMPY
+SELECT DISTINCT *FROM EMPY
 WHERE HIREDATE = (SELECT MIN(HIREDATE) FROM EMPY WHERE YEAR(HIREDATE) = 1981);
 
 -- Method 2: Using ORDER BY and LIMIT
-SELECT *
-FROM EMPY
+SELECT DISTINCT * FROM EMPY
 WHERE YEAR(HIREDATE) = 1981
-ORDER BY HIREDATE ASC
-LIMIT 1;
+ORDER BY HIREDATE ASC LIMIT 1;
 ```
 
 **68. List the employees who joined in 1981 with the job same as the most senior person of the year 1981.**
 
 ```sql
 -- Method 1: Using nested subqueries
-SELECT *
-FROM EMPY
+SELECT DISTINCT * FROM EMPY
 WHERE YEAR(HIREDATE) = 1981
-AND JOB = (SELECT JOB FROM EMPY WHERE HIREDATE = (SELECT MIN(HIREDATE) FROM EMPY WHERE YEAR(HIREDATE) = 1981));
+AND JOB = (SELECT DISTINCT JOB FROM EMPY WHERE HIREDATE = (SELECT MIN(HIREDATE) FROM EMPY WHERE YEAR(HIREDATE) = 1981));
 
 -- Method 2: Using a join
-SELECT e1.*
-FROM EMPY e1
+SELECT DISTINCT e1.* FROM EMPY e1
 JOIN (SELECT JOB, MIN(HIREDATE) as min_date FROM EMPY WHERE YEAR(HIREDATE) = 1981 GROUP BY JOB) AS subquery
 ON e1.JOB = subquery.JOB
 WHERE YEAR(e1.HIREDATE) = 1981
@@ -403,12 +398,12 @@ WHERE e1.DEPTNO = 20;
 -- Method 1: Using GROUP BY and COUNT
 SELECT DEPTNO, JOB, COUNT(*) AS number_of_employees
 FROM EMPY
-GROUP BY DEPTNO, JOB;
+GROUP BY DEPTNO, JOB order by DEPTNO ;
 
 -- Method 2: Using subquery (same logic but in a subquery)
 SELECT DEPTNO, JOB, COUNT(*) AS number_of_employees
 FROM (SELECT DEPTNO, JOB FROM EMPY) as subquery
-GROUP BY DEPTNO, JOB;
+GROUP BY DEPTNO, JOB  order by DEPTNO ;
 ```
 
 **76. List the manager no and the number of employees working for those mgrs in the ascending Mgrno.**
@@ -432,11 +427,12 @@ ORDER BY MGR ASC;
 
 ```sql
 -- Method 1: Using HAVING clause
-SELECT d.*
+SELECT d.LOC, D.DNAME, D.DEPTNO
 FROM DEPT d
 JOIN EMPY e ON d.DEPTNO = e.DEPTNO
-GROUP BY d.DEPTNO
+GROUP BY d.LOC, D.DNAME, D.DEPTNO
 HAVING COUNT(*) >= 2;
+
 
 -- Method 2: Using subquery
 SELECT d.*
@@ -483,7 +479,7 @@ HAVING COUNT(*) >= 2;
 
 ```sql
 -- Method 1: Using Subquery and LIMIT
-SELECT d.*
+SELECT d.DEPTNO,  COUNT(*) AS NO_OF_EMPS
 FROM DEPT d
 JOIN EMPY e ON d.DEPTNO = e.DEPTNO
 GROUP BY d.DEPTNO
@@ -535,12 +531,12 @@ WHERE incremented_sal > 3000;
 
 ```sql
 -- Method 1:  Using basic join
-SELECT e.*, d.DNAME
+SELECT DISTINCT e.*, d.DNAME
 FROM EMPY e
 JOIN DEPT d ON e.DEPTNO = d.DEPTNO;
 
 -- Method 2: using subquery (same logic)
-SELECT e.*, (SELECT DNAME FROM DEPT WHERE DEPTNO = e.DEPTNO) as dept_name
+SELECT  DISTINCT e.*, (SELECT DNAME FROM DEPT WHERE DEPTNO = e.DEPTNO) as dept_name
 FROM EMPY e;
 ```
 
@@ -563,14 +559,14 @@ WHERE d.DEPTNO IS NULL;
 
 ```sql
 -- Method 1: Using basic joins and conditions
-SELECT e.ENAME, d.DNAME, e.SAL, e.COMM
+SELECT DISTINCT  e.ENAME, d.DNAME, e.SAL, e.COMM
 FROM EMPY e
 JOIN DEPT d ON e.DEPTNO = d.DEPTNO
 WHERE e.SAL BETWEEN 2000 AND 5000
 AND d.LOC = 'CHICAGO';
 
 -- Method 2: using subquery
-SELECT ENAME, (SELECT DNAME FROM DEPT WHERE DEPTNO = e.DEPTNO), SAL, COMM
+SELECT DISTINCT  ENAME, (SELECT DNAME FROM DEPT WHERE DEPTNO = e.DEPTNO), SAL, COMM
 FROM EMPY e
 WHERE SAL BETWEEN 2000 AND 5000
 AND DEPTNO = (SELECT DEPTNO FROM DEPT WHERE LOC='CHICAGO');
@@ -642,7 +638,6 @@ WHERE MGR = (SELECT EMPNO FROM EMPY WHERE ENAME = 'JONES');
 
 **90. List the name and salary of ford if his salary is equal to his sal of his grade.**
 
-*This query is a bit tricky because we don't have a direct mapping of grade to salary. I'll assume you want to find Ford and see if his salary matches any employee with the same grade.*
 
 ```sql
 -- Method 1: Using self-join and a subquery
@@ -657,3 +652,169 @@ FROM EMPY
 WHERE ENAME = 'FORD'
 AND SAL IN (SELECT SAL FROM EMPY WHERE GRADE = (SELECT GRADE FROM EMPY WHERE ENAME = 'FORD'));
 ```
+
+**91. List the name, job, dname, sal, grade dept wise**
+
+```sql
+-- Method 1: Using JOIN and ORDER BY
+SELECT  DISTINCT e.ENAME, e.JOB, d.DNAME, e.SAL, e.GRADE
+FROM EMPY e
+JOIN DEPT d ON e.DEPTNO = d.DEPTNO
+ORDER BY e.DEPTNO;
+
+-- Method 2: Using Subquery (same logic)
+SELECT  DISTINCT  e.ENAME, e.JOB, (SELECT DNAME FROM DEPT WHERE DEPTNO = e.DEPTNO), e.SAL, e.GRADE
+FROM EMPY e
+ORDER BY e.DEPTNO;
+```
+
+**92. List the emp name, job, sal, grade and dname except clerks and sort on the basis of highest sal.**
+
+```sql
+-- Method 1: Using JOIN, WHERE, ORDER BY
+SELECT DISTINCT  e.ENAME, e.JOB, e.SAL, e.GRADE, d.DNAME
+FROM EMPY e
+JOIN DEPT d ON e.DEPTNO = d.DEPTNO
+WHERE e.JOB <> 'CLERK'
+ORDER BY e.SAL DESC;
+
+-- Method 2: Using subquery (same logic)
+SELECT  DISTINCT e.ENAME, e.JOB, e.SAL, e.GRADE, (SELECT DNAME FROM DEPT WHERE DEPTNO=e.DEPTNO)
+FROM EMPY e
+WHERE e.JOB <> 'CLERK'
+ORDER BY e.SAL DESC;
+
+```
+
+**93. List the emps name, job who are without manager.**
+
+```sql
+-- Method 1: Using WHERE clause with IS NULL
+SELECT ENAME, JOB
+FROM EMPY
+WHERE MGR IS NULL;
+
+-- Method 2: Using ISNULL Function (some DBs have this instead)
+SELECT ENAME, JOB
+FROM EMPY
+WHERE ISNULL(MGR);
+```
+
+**94. List the names of the emps who are getting the highest sal dept wise.**
+
+```sql
+-- Method 1: Using subquery with IN
+SELECT e1.ENAME
+FROM EMPY e1
+WHERE (e1.DEPTNO, e1.SAL) IN (
+    SELECT e2.DEPTNO, MAX(e2.SAL)
+    FROM EMPY e2
+    GROUP BY e2.DEPTNO
+);
+
+-- Method 2: Using a Self Join and Subquery
+SELECT e1.ENAME
+FROM EMPY e1
+JOIN (SELECT DEPTNO, MAX(SAL) as max_sal FROM EMPY GROUP BY DEPTNO) AS max_sal_dept
+ON e1.DEPTNO = max_sal_dept.DEPTNO AND e1.SAL = max_sal_dept.max_sal;
+```
+
+**95. List the emps whose sal is equal to the average of max and minimum.**
+
+```sql
+-- Method 1: Using a subquery for the average
+SELECT *
+FROM EMPY
+WHERE SAL = (
+    SELECT (MAX(SAL) + MIN(SAL)) / 2
+    FROM EMPY
+);
+
+-- Method 2: Using Variables (less portable, but works in some systems like MySQL)
+SELECT * FROM EMPY WHERE SAL = ((SELECT MAX(SAL) FROM EMPY) + (SELECT MIN(SAL) FROM EMPY)) / 2;
+```
+
+**96. List the no. of emps in each department where the no. is more than 3.**
+
+```sql
+-- Method 1: Using GROUP BY and HAVING clause
+SELECT DEPTNO, COUNT(*) AS number_of_employees
+FROM EMPY
+GROUP BY DEPTNO
+HAVING COUNT(*) > 3;
+
+-- Method 2: using subquery (same logic)
+SELECT DEPTNO, COUNT(*) AS number_of_employees
+FROM (SELECT DEPTNO FROM EMPY) AS subquery
+GROUP BY DEPTNO
+HAVING COUNT(*) > 3;
+```
+
+**97. List the names of depts. Where at least 3 are working in that department.**
+
+```sql
+-- Method 1: Using JOIN, GROUP BY and HAVING
+SELECT d.DNAME
+FROM DEPT d
+JOIN EMPY e ON d.DEPTNO = e.DEPTNO
+GROUP BY d.DNAME
+HAVING COUNT(*) >= 3;
+
+-- Method 2: using subquery (same logic)
+SELECT DNAME
+FROM DEPT
+WHERE DEPTNO IN (SELECT DEPTNO FROM EMPY GROUP BY DEPTNO HAVING COUNT(*) >= 3);
+```
+
+**98. List the managers whose sal is more than his employees avg salary.**
+
+```sql
+-- Method 1: Using Self-Join and Subquery
+SELECT e1.*
+FROM EMPY e1
+WHERE e1.JOB = 'MANAGER'
+AND e1.SAL > (
+    SELECT AVG(SAL)
+    FROM EMPY e2
+    WHERE e2.MGR = e1.EMPNO
+);
+
+-- Method 2: Using Join and Group By
+SELECT e1.*
+FROM EMPY e1
+JOIN (SELECT MGR, AVG(SAL) as avg_salary FROM EMPY GROUP BY MGR) AS subquery
+ON e1.EMPNO = subquery.MGR
+WHERE e1.JOB = 'MANAGER' and e1.SAL > subquery.avg_salary;
+```
+
+**99. List the name,salary,comm. For those employees whose net pay is greater than or equal to any other employee salary of the company.**
+
+```sql
+-- Method 1: Using Subquery and MAX with  IFNULL()
+SELECT ENAME, SAL, COMM
+FROM EMPY
+WHERE (SAL + IFNULL(COMM, 0)) >= ALL (SELECT (SAL + IFNULL(COMM,0)) FROM EMPY);
+
+
+-- Method 2: Using ORDER BY and LIMIT 1
+SELECT ENAME, SAL, COMM FROM EMPY
+ORDER BY (SAL + IFNULL(COMM, 0)) DESC LIMIT 1;
+```
+
+**100. List the emp whose sal < his manager but more than any other manager.**
+
+```sql
+-- Method 1: Using Nested Subqueries
+SELECT e1.*
+FROM EMPY e1
+WHERE e1.SAL < (SELECT SAL FROM EMPY WHERE EMPNO = e1.MGR)
+AND e1.SAL > ALL (SELECT SAL FROM EMPY WHERE JOB = 'MANAGER');
+
+-- Method 2: Using Join and All clause
+SELECT e1.*
+FROM EMPY e1
+JOIN EMPY e2 ON e1.MGR = e2.EMPNO
+WHERE e1.SAL < e2.SAL
+AND e1.SAL > ALL (SELECT SAL FROM EMPY WHERE JOB = 'MANAGER');
+```
+
