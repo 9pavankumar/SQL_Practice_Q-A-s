@@ -326,3 +326,148 @@ SELECT * FROM EMPY WHERE JOB NOT IN ('PRESIDENT', 'MANAGER') ORDER BY SAL ASC;
 -- Method 2
 SELECT * FROM EMPY WHERE JOB <> 'PRESIDENT' AND JOB <> 'MANAGER' ORDER BY SAL ASC;
 ```
+
+
+---
+
+### 31. List all the employees who joined before or after 1981.
+
+```sql
+-- Method 1
+SELECT * FROM EMPY WHERE YEAR(HIREDATE) != 1981;
+
+-- Method 2
+SELECT * FROM EMPY WHERE HIREDATE < '1981-01-01' OR HIREDATE > '1981-12-31';
+```
+
+---
+
+### 32. List the employees whose Empno does not start with digit 78.
+
+```sql
+-- Method 1
+SELECT * FROM EMPY WHERE EMPNO NOT LIKE '78%';
+
+-- Method 2
+SELECT * FROM EMPY WHERE LEFT(EMPNO, 2) != '78';
+```
+
+---
+
+### 33. List the employees who are working under 'MGR'.
+
+```sql
+-- Method 1
+SELECT E1.EMPNO AS Empno, E1.ENAME AS EmpName, E2.ENAME AS Manager 
+FROM EMPY AS E1
+INNER JOIN EMPY AS E2 ON E1.MGR = E2.EMPNO;
+
+-- Method 2
+SELECT * FROM EMPY WHERE MGR IS NOT NULL;
+```
+
+---
+
+### 34. List the employees who joined in any year but not in March.
+
+```sql
+-- Method 1
+SELECT * FROM EMPY WHERE MONTH(HIREDATE) != 3;
+
+-- Method 2
+SELECT * FROM EMPY WHERE HIREDATE NOT LIKE '____-03-%';
+```
+
+---
+
+### 35. List all the Clerks of Deptno 20.
+
+```sql
+-- Method 1
+SELECT * FROM EMPY WHERE JOB = 'CLERK' AND DEPTNO = 20;
+
+-- Method 2
+SELECT * FROM EMPY WHERE JOB = 'CLERK' AND DEPTNO IN (20);
+```
+
+---
+
+### 36. List the employees of Deptno 30 or 10 who joined in the year 1981.
+
+```sql
+-- Method 1
+SELECT * FROM EMPY WHERE YEAR(HIREDATE) = 1981 AND DEPTNO IN (10, 30);
+
+-- Method 2
+SELECT * FROM EMPY WHERE DEPTNO = 30 OR DEPTNO = 10 AND YEAR(HIREDATE) = 1981;
+```
+
+---
+
+### 37. Display the details of SMITH.
+
+```sql
+-- Method 1
+SELECT * FROM EMPY WHERE ENAME = 'SMITH';
+
+-- Method 2
+SELECT * FROM EMPY WHERE LOWER(ENAME) = 'smith';
+```
+
+---
+
+### 38. Display the location of SMITH.
+
+```sql
+-- Method 1
+SELECT D.LOC 
+FROM EMPY E
+JOIN DEPT D ON E.DEPTNO = D.DEPTNO
+WHERE E.ENAME = 'SMITH';
+
+-- Method 2
+SELECT LOC 
+FROM DEPT 
+WHERE DEPTNO = (SELECT DEPTNO FROM EMPY WHERE ENAME = 'SMITH');
+```
+
+---
+
+### 39. List the total information of EMP table along with DNAME and LOC of all the employees working under 'ACCOUNTING' and 'RESEARCH'.
+
+```sql
+-- Method 1
+SELECT E.*, D.DNAME, D.LOC 
+FROM EMPY E
+JOIN DEPT D ON E.DEPTNO = D.DEPTNO
+WHERE D.DNAME IN ('ACCOUNTING', 'RESEARCH')
+ORDER BY E.DEPTNO ASC;
+
+-- Method 2
+SELECT * FROM EMPY 
+JOIN DEPT ON EMPY.DEPTNO = DEPT.DEPTNO 
+WHERE DNAME = 'ACCOUNTING' OR DNAME = 'RESEARCH';
+```
+
+---
+
+### 40. List the Empno, Ename, Sal, Dname of all the 'MGRS' and 'ANALYST' working in New York, Dallas with experience more than 7 years without receiving Comm, sorted by location.
+
+```sql
+-- Method 1
+SELECT E.EMPNO, E.ENAME, E.SAL, D.DNAME 
+FROM EMPY E
+JOIN DEPT D ON E.DEPTNO = D.DEPTNO
+WHERE (D.LOC IN ('NEW YORK', 'DALLAS')) 
+  AND (YEAR(CURRENT_DATE()) - YEAR(E.HIREDATE)) > 7 
+  AND E.COMM IS NULL 
+ORDER BY D.LOC ASC;
+
+-- Method 2
+SELECT EMPNO, ENAME, SAL, DNAME 
+FROM EMPY E
+JOIN DEPT D ON E.DEPTNO = D.DEPTNO
+WHERE D.LOC = 'NEW YORK' OR D.LOC = 'DALLAS'
+  AND (YEAR(CURRENT_DATE()) - YEAR(HIREDATE)) > 7
+  AND COMM IS NULL;
+```
