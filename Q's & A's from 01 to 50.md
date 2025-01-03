@@ -332,6 +332,5 @@ SELECT * FROM EMPY WHERE JOB NOT IN ('PRESIDENT', 'MANAGER') ORDER BY SAL ASC;
 SELECT * FROM EMPY WHERE JOB <> 'PRESIDENT' AND JOB <> 'MANAGER' ORDER BY SAL ASC;
 ```
 
----
 
-I hope this covers all your queries. Let me know if you need further clarification or adjustments!
+
