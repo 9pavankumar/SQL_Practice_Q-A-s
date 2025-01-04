@@ -1,4 +1,4 @@
-# SQL_Practice_Q_-_Ans
+# SQL_Practice_Qs_As
 
 ##  FOLLOW AS BELOW
 
