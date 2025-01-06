@@ -526,7 +526,7 @@ SELECT *
 FROM EMPY
 WHERE CAST(SAL as CHAR) LIKE '%.%'
 
--- Method 2: Using data type and check (Database dependent and not fully guaranteed, might need implicit type casting or regex)
+-- Method2: Using data type & check(Database dependent and not fully guaranteed, might need implicit type casting or regex)
 SELECT * FROM EMPY WHERE SAL<>FLOOR(SAL);
 
 ```
